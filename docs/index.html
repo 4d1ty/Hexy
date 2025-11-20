@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hexy - Hex Dumper</title>
+<style>
+  body {
+    margin: 0;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #121212;
+    color: #e0e0e0;
+  }
+
+  header {
+    background: linear-gradient(90deg, #1e1e1e, #282828);
+    padding: 3rem 1rem;
+    text-align: center;
+    border-bottom: 2px solid #00aaff;
+  }
+
+  header h1 {
+    font-size: 3rem;
+    margin-bottom: 0.5rem;
+    color: #00aaff;
+  }
+
+  header p {
+    color: #aaaaaa;
+    font-size: 1.2rem;
+  }
+
+  main {
+    max-width: 900px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+  }
+
+  section {
+    background-color: #1e1e1e;
+    border-radius: 10px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+  }
+
+  h2 {
+    color: #00aaff;
+    margin-top: 0;
+  }
+
+  ul {
+    padding-left: 1.5rem;
+  }
+
+  pre {
+    background-color: #2a2a2a;
+    padding: 1rem;
+    border-radius: 6px;
+    overflow-x: auto;
+    color: #f0f0f0;
+    white-space: pre-wrap;
+  }
+
+  code {
+    font-family: "Courier New", monospace;
+  }
+
+  a.button {
+    display: inline-block;
+    background-color: #00aaff;
+    color: #fff;
+    text-decoration: none;
+    padding: 12px 28px;
+    border-radius: 6px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    margin-top: 15px;
+  }
+
+  a.button:hover {
+    background-color: #0088cc;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,170,255,0.5);
+  }
+
+  input[type="file"] {
+    display: none;
+  }
+
+  label.file-label {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #00aaff;
+    color: #fff;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+    font-weight: bold;
+  }
+
+  label.file-label:hover {
+    background-color: #0088cc;
+  }
+
+  .ascii-printable {
+    color: #0f0;
+  }
+
+  .ascii-nonprintable {
+    color: #f00;
+  }
+
+  footer {
+    text-align: center;
+    padding: 20px;
+    background-color: #1e1e1e;
+    font-size: 0.9rem;
+    color: #888;
+    border-top: 2px solid #00aaff;
+  }
+
+  @media (max-width: 600px) {
+    header h1 {
+      font-size: 2.2rem;
+    }
+    header p {
+      font-size: 1rem;
+    }
+    section {
+      padding: 1.5rem;
+    }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Hexy</h1>
+  <p>Lightweight Hex Dumper for Binary Files and Fennec Assembly Bytecode</p>
+</header>
+
+<main>
+  <section>
+    <h2>📥 Download</h2>
+    <p>Get the latest Hexy release standalone:</p>
+    <a href="https://github.com/4d1ty/hexy/releases/latest" class="button">Download Hexy</a>
+    <p style="margin-top:10px; color:#aaa;">Also included in <a href="https://github.com/4d1ty/foxbox" style="color:#00aaff;">FoxBox</a> for inspecting Fennec Assembly bytecode.</p>
+  </section>
+
+  <section>
+    <h2>✨ Features</h2>
+    <ul>
+      <li>Fast, minimal hex dump for binary files</li>
+      <li>Displays offsets, hex bytes, and ASCII column</li>
+      <li>Colors printable (green) and non-printable (red) bytes</li>
+      <li>Cross-platform: Linux, macOS, Windows</li>
+      <li>Standalone or bundled with FoxBox educational VM</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>💡 Interactive Preview</h2>
+    <p>Select a small binary file to preview hex output directly in your browser:</p>
+    <label for="fileInput" class="file-label">Choose File</label>
+    <input type="file" id="fileInput" />
+
+    <pre id="hexOutput"></pre>
+  </section>
+
+  <section>
+    <h2>📬 Contact</h2>
+    <p>Have questions or want to contribute? Reach out at <a href="mailto:your-email@example.com" style="color:#00aaff;">your-email@example.com</a></p>
+  </section>
+</main>
+
+<footer>
+  &copy; 2025 Hexy. Hosted on GitHub Pages.
+</footer>
+
+<script>
+const fileInput = document.getElementById("fileInput");
+const hexOutput = document.getElementById("hexOutput");
+
+fileInput.addEventListener("change", (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const bytes = new Uint8Array(e.target.result);
+    let result = "";
+    let line = [];
+    for (let i = 0; i < bytes.length; i++) {
+      if (i % 16 === 0) {
+        if (line.length > 0) {
+          result += " " + line.map(c => c).join("") + "\n";
+          line = [];
+        }
+        result += i.toString(16).padStart(8, "0") + ": ";
+      }
+
+      result += bytes[i].toString(16).padStart(2, "0") + " ";
+      const ascii = bytes[i] >= 32 && bytes[i] <= 126 ? `<span class="ascii-printable">${String.fromCharCode(bytes[i])}</span>` : `<span class="ascii-nonprintable">.</span>`;
+      line.push(ascii);
+    }
+
+    // print last line ASCII
+    if (line.length > 0) {
+      while (line.length < 16) {
+        result += "   ";
+        line.push(" ");
+      }
+      result += " " + line.map(c => c).join("") + "\n";
+    }
+
+    hexOutput.innerHTML = result;
+  };
+  reader.readAsArrayBuffer(file);
+});
+</script>
+
+</body>
+</html>
