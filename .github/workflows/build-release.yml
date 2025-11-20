@@ -4,6 +4,9 @@ on:
   release:
     types: [published]
 
+permissions:
+  contents: write
+
 jobs:
   build-windows:
     runs-on: windows-2025
@@ -31,3 +34,4 @@ jobs:
       with:
         artifacts: hexy-windows.zip
         tag: ${{ github.ref_name }}
+        allowUpdates: true
