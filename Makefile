@@ -2,15 +2,19 @@
 CXX = g++
 CXXFLAGS = -Wall -g -std=c++20
 
-# Source files
-SRCS = main.cpp
-OBJS = $(SRCS:.cpp=.o)
+# Directories
+SRC_DIR = src
+BUILD_DIR = build
+
+# Source and object files
+SRCS = $(wildcard $(SRC_DIR)/*.cpp)
+OBJS = $(patsubst $(SRC_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(SRCS))
 
 # Detect OS and set target
 ifeq ($(OS),Windows_NT)
-    TARGET = hexy.exe
+    TARGET = $(BUILD_DIR)/hexy.exe
 else
-    TARGET = hexy
+    TARGET = $(BUILD_DIR)/hexy
 endif
 
 # Default target
@@ -18,12 +22,14 @@ all: $(TARGET)
 
 # Link object files
 $(TARGET): $(OBJS)
-	$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJS)
+	@mkdir -p $(BUILD_DIR)
+	$(CXX) $(CXXFLAGS) -o $@ $(OBJS)
 
-# Compile source files
-%.o: %.cpp
+# Compile source files into build/
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
+	@mkdir -p $(BUILD_DIR)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 # Clean
 clean:
-	rm -f $(OBJS) $(TARGET)
+	rm -rf $(BUILD_DIR)/*
