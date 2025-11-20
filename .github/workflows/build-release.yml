@@ -20,7 +20,7 @@ jobs:
 
     - name: Build Hexy
       run: |
-        g++ -std=c++20 -Wall -O2 -o hexy.exe main.cpp
+        g++ -std=c++20 -Wall -O2 -o hexy.exe src/main.cpp
 
     - name: Create zip archive
       run: |
