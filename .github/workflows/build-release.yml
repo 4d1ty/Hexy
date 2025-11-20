@@ -1,22 +1,18 @@
-name: Build Hexy Release
+name: Build Hexy Windows Release
 
 on:
   release:
     types: [published]
 
 jobs:
-  build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+  build-windows:
+    runs-on: windows-2025
 
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
 
-    - name: Set up compiler
-      if: matrix.os == 'windows-latest'
+    - name: Install MSYS2 / g++
       uses: msys2/setup-msys2@v2
       with:
         update: true
@@ -24,46 +20,14 @@ jobs:
 
     - name: Build Hexy
       run: |
-        if [ "${{ runner.os }}" == "Windows" ]; then
-          g++ -std=c++20 -Wall -O2 -o hexy.exe main.cpp
-        else
-          g++ -std=c++20 -Wall -O2 -o hexy main.cpp
-        fi
+        g++ -std=c++20 -Wall -O2 -o hexy.exe main.cpp
 
-    - name: Upload artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: Hexy-${{ runner.os }}
-        path: |
-          hexy*
-  
-  release-assets:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-    - name: Download Windows artifact
-      uses: actions/download-artifact@v4
-      with:
-        name: Hexy-windows-latest
-        path: .
+    - name: Create zip archive
+      run: |
+        powershell Compress-Archive -Path hexy.exe -DestinationPath hexy-windows.zip
 
-    - name: Download Linux artifact
-      uses: actions/download-artifact@v4
-      with:
-        name: Hexy-ubuntu-latest
-        path: .
-
-    - name: Download macOS artifact
-      uses: actions/download-artifact@v4
-      with:
-        name: Hexy-macos-latest
-        path: .
-
-    - name: Attach binaries to release
+    - name: Attach zip to release
       uses: ncipollo/release-action@v1
       with:
-        artifacts: |
-          hexy.exe
-          hexy
-          hexy-macos
+        artifacts: hexy-windows.zip
         tag: ${{ github.ref_name }}
